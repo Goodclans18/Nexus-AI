@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  :root {
+    --bg: #0F1115;
+    --panel: #1A1D23;
+    --accent: #3B82F6;
+    --text-p: #E2E8F0;
+    --text-s: #94A3B8;
+    --border: #2D333F;
+    --success: #10B981;
+    --line: rgba(255, 255, 255, 0.05);
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text-p);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .terminal-text {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover {
+    background: #2563EB;
+    transform: translateY(-1px);
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-p);
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .btn-outline:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .badge-accent {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  .stat-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 6px;
+  }
+
+  .log-container {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-s);
+    background: #0a0c10;
+    padding: 12px;
+    border-radius: 4px;
+    overflow-y: auto;
+  }
+}

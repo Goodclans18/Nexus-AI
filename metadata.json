@@ -1,0 +1,6 @@
+{
+  "name": "Nexus AI Bot Master",
+  "description": "Uma plataforma de controle e aprendizado para treinar IAs de jogos de luta usando Python e Visão Computacional.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
