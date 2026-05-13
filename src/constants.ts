@@ -141,5 +141,36 @@ def run_bot(model_path):
             else: pydirectinput.keyUp('up')
             
             # ... repetir para outras teclas ...
+`,
+  KEY_ROTATOR: `
+# Nexus AI - Utility: API Key Rotation
+# Gerencia múltiplas chaves para evitar interrupções por quota
+
+class KeyPool:
+    def __init__(self, keys):
+        self.keys = keys
+        self.current_index = 0
+        self.active_key = keys[0]
+
+    def rotate(self):
+        self.current_index += 1
+        if self.current_index >= len(self.keys):
+            print("!!! ALERTA: Todas as chaves esgotadas. Aguardando recarga...")
+            return False
+            
+        self.active_key = self.keys[self.current_index]
+        print(f"--- MUDANÇA DE ROTA: Usando chave #{self.current_index + 1}")
+        return True
+
+    def call_api(self, func, *args, **kwargs):
+        while True:
+            try:
+                return func(self.active_key, *args, **kwargs)
+            except Exception as e:
+                if "quota" in str(e).lower():
+                    if not self.rotate():
+                        raise Exception("RECARGA NECESSÁRIA: Aguarde novos tokens.")
+                else:
+                    raise e
 `
 };
