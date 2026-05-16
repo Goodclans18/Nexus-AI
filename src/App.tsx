@@ -452,6 +452,14 @@ export default function App() {
                   </div>
                   <div className={`w-1.5 h-1.5 rounded-full ${safetyLock ? 'bg-red-500' : 'bg-emerald-500 animate-pulse'}`}></div>
                </div>
+
+               <div className="flex items-center justify-between border-t border-white/5 pt-2">
+                  <div className="flex items-center gap-2">
+                     <RotateCw className="w-3 h-3 text-blue-500" />
+                     <span className="text-[9px] uppercase tracking-widest text-zinc-500">Agent Sync</span>
+                  </div>
+                  <span className="text-[9px] font-bold text-emerald-500 uppercase">v2.1.0 (Live)</span>
+               </div>
                
                <div className="space-y-2">
                   <div className="flex justify-between items-center text-[9px] uppercase tracking-widest text-zinc-500">
