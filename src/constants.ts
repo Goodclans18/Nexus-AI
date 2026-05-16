@@ -265,5 +265,90 @@ class KeyPool:
                         raise Exception("RECARGA NECESSÁRIA: Aguarde novos tokens.")
                 else:
                     raise e
+`,
+  FULL_AGENT: `
+# ==========================================
+# NEXUS AI - AGENT MASTER (STABLE v2.1.0)
+# ==========================================
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import numpy as np
+import cv2
+import mss
+import pydirectinput
+import keyboard
+import requests
+import time
+import os
+
+# --- 1. CONFIGURAÇÕES ---
+ACTIONS = ['up', 'down', 'left', 'right', 'x', 'c', 'v']
+THRESHOLD = 0.65
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DASHBOARD_URL = "http://localhost:3000"
+pydirectinput.PAUSE = 0
+
+# --- 2. MODELO (NexusNet v2) ---
+class NexusNet(nn.Module):
+    def __init__(self, num_actions=7):
+        super(NexusNet, self).__init__()
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=8, stride=4)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
+        self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
+        self.fc1 = nn.Linear(64 * 16 * 11, 512)
+        self.fc2 = nn.Linear(512, num_actions)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        return torch.sigmoid(self.fc2(x))
+
+# --- 3. LÓGICA DE EXECUÇÃO ---
+def run_agent(model_path="nexus_model.pth"):
+    print(f"--- Nexus Agent Online [{DEVICE}] ---")
+    
+    # Carregar modelo
+    model = NexusNet(num_actions=len(ACTIONS))
+    if os.path.exists(model_path):
+        model.load_state_dict(torch.load(model_path, map_location=DEVICE))
+        print(f"Modelo carregado: {model_path}")
+    else:
+        print("Aviso: nexus_model.pth não encontrado. Usando pesos aleatórios (Modo Teste)")
+    
+    model.to(DEVICE)
+    model.eval()
+
+    with mss.mss() as sct:
+        monitor = {"top": 40, "left": 0, "width": 800, "height": 600}
+        print("Rodando... Pressione 'ESC' para parar.")
+        
+        while not keyboard.is_pressed('esc'):
+            # Captura e Pré-processamento
+            img = np.array(sct.grab(monitor))
+            gray = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
+            resized = cv2.resize(gray, (160, 120))
+            input_tensor = torch.from_numpy(resized).float().unsqueeze(0).unsqueeze(0).to(DEVICE) / 255.0
+            
+            # Inferência
+            with torch.no_grad():
+                outputs = model(input_tensor).cpu().numpy()[0]
+            
+            # Mapeamento de Teclas
+            for i, action in enumerate(ACTIONS):
+                if outputs[i] > THRESHOLD:
+                    pydirectinput.keyDown(action)
+                else:
+                    pydirectinput.keyUp(action)
+
+    # Cleanup
+    for action in ACTIONS: pydirectinput.keyUp(action)
+    print("Agente finalizado.")
+
+if __name__ == "__main__":
+    run_agent()
 `
 };

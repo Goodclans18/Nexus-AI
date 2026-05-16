@@ -813,17 +813,33 @@ export default function App() {
                   </p>
                 </div>
 
-                <div>
-                  <label className="panel-label">Distribuição</label>
+                <div className="space-y-4">
+                  <label className="panel-label">Distribuição e Agente</label>
+                  <button 
+                    onClick={() => {
+                        const blob = new Blob([PYTHON_SCRIPTS.FULL_AGENT as string], { type: 'text/plain' });
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'nexus_agent.py';
+                        a.click();
+                        addLog("Agente Python (nexus_agent.py) gerado e baixado.");
+                    }}
+                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-black text-xs uppercase tracking-[0.2em] transition-all shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-3"
+                  >
+                    <Download className="w-4 h-4" />
+                    Baixar Agente Python (.py)
+                  </button>
+                  
                   <button 
                     onClick={() => {
                         addLog("Preparando pacote PWA standalone...");
-                        window.print(); // Fallback simulation for "save as"
+                        window.print();
                     }}
                     className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded font-black text-xs uppercase tracking-[0.2em] transition-all shadow-lg shadow-blue-500/10 flex items-center justify-center gap-3"
                   >
                     <Download className="w-4 h-4" />
-                    Instalar como Aplicativo (PWA)
+                    Instalar PWA (Desktop)
                   </button>
                 </div>
 
