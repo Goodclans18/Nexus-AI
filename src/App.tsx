@@ -84,6 +84,17 @@ interface Dataset {
   size: string;
 }
 
+const CHAR_DATABASE: Record<string, any> = {
+  "Mario": { startup: 3, active: 4, recovery: 12, shield: -2, tier: 'A' },
+  "Link": { startup: 6, active: 3, recovery: 18, shield: -5, tier: 'B' },
+  "Kirby": { startup: 2, active: 5, recovery: 10, shield: -1, tier: 'S' },
+  "Pikachu": { startup: 1, active: 3, recovery: 8, shield: 0, tier: 'S' },
+  "Sonic": { startup: 2, active: 4, recovery: 15, shield: -4, tier: 'A' },
+  "Ichigo": { startup: 4, active: 6, recovery: 20, shield: -7, tier: 'B' },
+  "Naruto": { startup: 3, active: 4, recovery: 14, shield: -3, tier: 'A' },
+  "Desconhecido": { startup: 0, active: 0, recovery: 0, shield: 0, tier: '?' }
+};
+
 export default function App() {
   const [steps, setSteps] = useState(INITIAL_STEPS);
   const [activeStepId, setActiveStepId] = useState('2');
@@ -92,6 +103,8 @@ export default function App() {
   const [running, setRunning] = useState(false);
   const [safetyLock, setSafetyLock] = useState(false);
   const [controlMode, setControlMode] = useState<'PASSIVE' | 'OVERRIDE'>('PASSIVE');
+  const [gamePath, setGamePath] = useState<string>(localStorage.getItem('nexus_game_path') || 'C:/Games/SSF2');
+  const [showSettings, setShowSettings] = useState(false);
   const [isShuttingDown, setIsShuttingDown] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [gameState, setGameState] = useState<GameState>({
@@ -101,6 +114,8 @@ export default function App() {
     detectedFrame: 0,
     activeMove: "Idle"
   });
+
+  const currentCharData = CHAR_DATABASE[gameState.p1Char] || CHAR_DATABASE["Desconhecido"];
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [logs, setLogs] = useState<string[]>([
     "[SYSTEM] Inicializando Nexus AI Dashboard...",
@@ -209,11 +224,21 @@ export default function App() {
     }
   };
 
+  const saveGamePath = (path: string) => {
+    setGamePath(path);
+    localStorage.setItem('nexus_game_path', path);
+    addLog(`Diretório do jogo atualizado: ${path}`);
+  };
+
   const handleDeepScan = async () => {
     setIsScanning(true);
-    addLog("Iniciando varredura profunda no sistema de arquivos do jogo...");
+    addLog(`Iniciando varredura em: ${gamePath}...`);
     try {
-      const res = await fetch('/api/scan', { method: 'POST' });
+      const res = await fetch('/api/scan', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: gamePath })
+      });
       const data = await res.json();
       setGameState(data.gameState);
       addLog(`Identificado: ${data.gameState.p1Char} vs ${data.gameState.cpuChar} em ${data.gameState.stage}`);
@@ -307,7 +332,11 @@ export default function App() {
               <Power className="w-4 h-4" />
               <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap border border-white/10 pointer-events-none">KILL PROCESS</span>
             </button>
-            <button className="text-[#94A3B8] hover:text-white transition-colors">
+            <button 
+              onClick={() => setShowSettings(true)}
+              className="text-[#94A3B8] hover:text-white transition-colors p-1.5 rounded hover:bg-white/5"
+              title="Configurações Locais"
+            >
               <Settings className="w-4 h-4" />
             </button>
           </div>
@@ -371,23 +400,28 @@ export default function App() {
             <span className="panel-label">Active Intelligence: {gameState.p1Char}</span>
             <div className="hardware-card bg-black/40 p-4 space-y-4">
                <div>
-                  <div className="text-[9px] text-zinc-500 uppercase tracking-widest mb-2 font-black">Frame Data Summary</div>
+                  <div className="text-[9px] text-zinc-500 uppercase tracking-widest mb-2 font-black flex justify-between">
+                    <span>Frame Data Summary</span>
+                    <span className="text-blue-500">TIER {currentCharData.tier}</span>
+                  </div>
                   <div className="grid grid-cols-2 gap-2 text-[10px]">
                      <div className="p-2 bg-white/5 rounded border border-white/5">
                         <div className="opacity-50 font-mono">Startup</div>
-                        <div className="text-white font-bold">3F</div>
+                        <div className="text-white font-bold">{currentCharData.startup}F</div>
                      </div>
                      <div className="p-2 bg-white/5 rounded border border-white/5">
                         <div className="opacity-50 font-mono">Active</div>
-                        <div className="text-white font-bold">2F</div>
+                        <div className="text-white font-bold">{currentCharData.active}F</div>
                      </div>
                      <div className="p-2 bg-white/5 rounded border border-white/5">
                         <div className="opacity-50 font-mono">Recovery</div>
-                        <div className="text-white font-bold">10F</div>
+                        <div className="text-white font-bold">{currentCharData.recovery}F</div>
                      </div>
                      <div className="p-2 bg-white/5 rounded border border-white/5">
                         <div className="opacity-50 font-mono">Shield</div>
-                        <div className="text-white font-bold">-2F</div>
+                        <div className={`font-bold ${currentCharData.shield >= 0 ? 'text-emerald-500' : 'text-red-400'}`}>
+                          {currentCharData.shield > 0 ? '+' : ''}{currentCharData.shield}F
+                        </div>
                      </div>
                   </div>
                </div>
@@ -597,7 +631,12 @@ export default function App() {
                   <button className="btn-secondary h-[54px] px-6" disabled={isShuttingDown} title="Exportar Dados">
                     <Upload className="w-4 h-4" />
                   </button>
-                  <button className="btn-secondary h-[54px] px-6" disabled={isShuttingDown} title="Configurações">
+                  <button 
+                    onClick={() => setShowSettings(true)}
+                    className="btn-secondary h-[54px] px-6" 
+                    disabled={isShuttingDown} 
+                    title="Configurações"
+                  >
                     <Settings className="w-4 h-4" />
                   </button>
                 </div>
@@ -723,6 +762,80 @@ export default function App() {
            CUIDADO: INTERFACE DE CONTROLE ATIVA
         </div>
       </footer>
+
+      {/* Settings Modal */}
+      <AnimatePresence>
+        {showSettings && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-md hardware-card bg-[#16181D] border-blue-500/20 p-8 shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-xl font-black italic tracking-tighter uppercase flex items-center gap-3">
+                  <Settings className="w-5 h-5 text-blue-500" />
+                  Configurações Nexus
+                </h2>
+                <button onClick={() => setShowSettings(false)} className="text-zinc-500 hover:text-white transition-colors">
+                  <Square className="w-4 h-4 rotate-45" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="panel-label">Localização do Jogo (SSF2)</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      value={gamePath}
+                      onChange={(e) => setGamePath(e.target.value)}
+                      placeholder="C:/Games/Super Smash Flash 2"
+                      className="flex-1 bg-black border border-white/10 rounded px-4 py-3 text-xs font-mono text-zinc-300 focus:border-blue-500 outline-none transition-colors"
+                    />
+                  </div>
+                  <p className="text-[10px] text-zinc-500 mt-2 italic">
+                    * Necessário para extração de frames e dados de personagens.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="panel-label">Distribuição</label>
+                  <button 
+                    onClick={() => {
+                        addLog("Preparando pacote PWA standalone...");
+                        window.print(); // Fallback simulation for "save as"
+                    }}
+                    className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded font-black text-xs uppercase tracking-[0.2em] transition-all shadow-lg shadow-blue-500/10 flex items-center justify-center gap-3"
+                  >
+                    <Download className="w-4 h-4" />
+                    Instalar como Aplicativo (PWA)
+                  </button>
+                </div>
+
+                <div className="pt-4 border-t border-white/5">
+                   <button 
+                    onClick={() => {
+                      localStorage.setItem('nexus_game_path', gamePath);
+                      setShowSettings(false);
+                      addLog("Configurações salvas.");
+                    }}
+                    className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded font-bold text-xs uppercase transition-colors"
+                  >
+                    Salvar e Bloquear
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
