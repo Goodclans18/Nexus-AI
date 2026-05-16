@@ -5,22 +5,24 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
-@layer base {
-  :root {
-    --bg: #0F1115;
-    --panel: #1A1D23;
-    --accent: #3B82F6;
-    --text-p: #E2E8F0;
-    --text-s: #94A3B8;
-    --border: #2D333F;
-    --success: #10B981;
-    --line: rgba(255, 255, 255, 0.05);
-  }
+@theme {
+  --color-bg: #0F1115;
+  --color-panel: #16181D;
+  --color-accent: #3B82F6;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-text-p: #E2E8F0;
+  --color-text-s: #94A3B8;
+  --color-border: #2D333F;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
 
+@layer base {
   body {
-    background-color: var(--bg);
-    color: var(--text-p);
-    font-family: var(--font-sans);
+    background-color: var(--color-bg);
+    color: var(--color-text-p);
+    font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     margin: 0;
     height: 100vh;
@@ -29,71 +31,46 @@
 }
 
 @layer components {
-  .glass-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+  .hardware-card {
+    background: var(--color-panel);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 10px 30px rgba(0, 0, 0, 0.4);
   }
 
   .terminal-text {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     line-height: 1.4;
   }
 
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
   .btn-primary {
-    background: var(--accent);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-weight: 600;
-    transition: all 0.2s;
+    @apply flex items-center justify-center gap-2 px-4 py-2 rounded font-bold text-xs uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 bg-blue-500 text-white hover:bg-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.2)];
   }
 
-  .btn-primary:hover {
-    background: #2563EB;
-    transform: translateY(-1px);
+  .btn-secondary {
+    @apply flex items-center justify-center gap-2 px-4 py-2 rounded font-bold text-xs uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 border border-slate-700 text-slate-400 hover:bg-white/5;
   }
 
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-p);
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-weight: 600;
-    transition: all 0.2s;
-  }
-
-  .btn-outline:hover {
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .badge-accent {
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-size: 10px;
-    font-weight: bold;
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-  }
-
-  .stat-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border);
-    padding: 12px;
-    border-radius: 6px;
-  }
-
-  .log-container {
+  .panel-label {
     font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text-s);
-    background: #0a0c10;
-    padding: 12px;
-    border-radius: 4px;
-    overflow-y: auto;
+    font-size: 0.65rem;
+    color: var(--color-text-s);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.1em;
   }
 }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-s); }
