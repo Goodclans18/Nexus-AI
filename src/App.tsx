@@ -393,7 +393,7 @@ export default function App() {
   };
 
   const downloadAgent = () => {
-    const blob = new Blob([PYTHON_SCRIPTS.EXEC], { type: 'text/plain' });
+    const blob = new Blob([PYTHON_SCRIPTS.FULL_AGENT], { type: 'text/plain' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
