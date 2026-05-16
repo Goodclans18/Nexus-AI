@@ -26,3 +26,26 @@ export interface ProjectStep {
   details: string;
   codeSnippet?: string;
 }
+
+export interface CharacterIntel {
+  id: string;
+  name: string;
+  tier: string;
+  description: string;
+  frameData: {
+    move: string;
+    startup: number;
+    active: number;
+    recovery: number;
+    onShield: number;
+  }[];
+  spritesLoaded: boolean;
+}
+
+export interface GameState {
+  p1Char: string;
+  cpuChar: string;
+  stage: string;
+  detectedFrame?: number;
+  activeMove?: string;
+}

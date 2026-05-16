@@ -10,14 +10,73 @@ app.use(express.json());
 // API Simulation for the Bot
 let botStatus = {
   active: false,
+  running: false,
+  safetyLock: false,
+  integrityCheck: "SECURE",
   cpuUsage: "0%",
   latency: "0ms",
   lastFrame: null,
-  activeKey: "ROTA_1"
+  activeKey: "ROTA_1",
+  gameState: {
+    p1Char: "Desconhecido",
+    cpuChar: "Desconhecido",
+    stage: "Desconhecido",
+    detectedFrame: 0,
+    activeMove: "Idle"
+  }
 };
 
 app.get("/api/status", (req, res) => {
+  // Simulate safety health check
+  botStatus.safetyLock = Math.random() > 0.99; // 1% chance of temporary safety alert
   res.json(botStatus);
+});
+
+app.post("/api/safety/failsafe", (req, res) => {
+  botStatus.running = false;
+  botStatus.safetyLock = true;
+  res.json({ status: "emergency_stop_triggered" });
+});
+
+app.post("/api/scan", (req, res) => {
+  // Simulate character detection
+  const chars = ["Mario", "Link", "Kirby", "Pikachu", "Sonic", "Ichigo", "Naruto"];
+  botStatus.gameState.p1Char = chars[Math.floor(Math.random() * chars.length)];
+  botStatus.gameState.cpuChar = chars[Math.floor(Math.random() * chars.length)];
+  botStatus.gameState.stage = "Final Destination";
+  res.json({ status: "scan_complete", gameState: botStatus.gameState });
+});
+
+app.post("/api/start", (req, res) => {
+  botStatus.running = true;
+  botStatus.active = true;
+  res.json({ status: "started" });
+});
+
+app.post("/api/stop", (req, res) => {
+  botStatus.running = false;
+  res.json({ status: "stopped" });
+});
+
+app.post("/api/shutdown", (req, res) => {
+  botStatus = {
+    active: false,
+    running: false,
+    safetyLock: false,
+    integrityCheck: "SECURE",
+    cpuUsage: "0%",
+    latency: "0ms",
+    lastFrame: null,
+    activeKey: "ROTA_1",
+    gameState: {
+      p1Char: "Desconhecido",
+      cpuChar: "Desconhecido",
+      stage: "Desconhecido",
+      detectedFrame: 0,
+      activeMove: "Idle"
+    }
+  };
+  res.json({ status: "shutdown_complete" });
 });
 
 app.post("/api/heartbeat", (req, res) => {

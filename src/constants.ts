@@ -117,6 +117,33 @@ def train_model(model, dataloader):
         
         print(f"Epoch {epoch+1} Loss: {running_loss/len(dataloader)}")
 `,
+  DATA_SCAN: `
+# Nexus AI - Step 6: Deep System Scan (Filesystem)
+# This script extracts internal data from SSF2 files (Assets/Data)
+
+import os
+import json
+
+GAME_PATH = "C:/Games/SSF2" # Exemplo
+
+def scan_character_assets(char_id):
+    path = f"{GAME_PATH}/data/chars/{char_id}/"
+    if not os.path.exists(path):
+        print(f"!!! Erro: Diretório de {char_id} não encontrado.")
+        return None
+    
+    print(f"--- Escaneando Arquivos de {char_id} ---")
+    # Algoritmo de OCR ou Extrator de Frames
+    # (Simulado: listando sprites)
+    if os.path.exists(path):
+        sprites = [f for f in os.listdir(path) if f.endswith('.png')]
+        print(f"Sucesso: {len(sprites)} sprites capturados.")
+    
+    return {"status": "ok", "captured": len(sprites)}
+
+if __name__ == "__main__":
+    scan_character_assets("mario")
+`,
   EXEC: `
 # Nexus AI - Step 5: Inference (The Bot Playing)
 import pydirectinput # Mais confiável para jogos DirectX/Flash
