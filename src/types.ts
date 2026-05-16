@@ -24,6 +24,8 @@ export interface ProjectStep {
   description: string;
   status: StepStatus;
   details: string;
+  icon?: string;
+  progress?: number;
   codeSnippet?: string;
 }
 

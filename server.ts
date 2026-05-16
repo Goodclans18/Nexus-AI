@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
+import { PYTHON_SCRIPTS } from "./src/constants";
 
 const app = express();
 const PORT = 3000;

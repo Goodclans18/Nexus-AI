@@ -1,6 +1,8 @@
 {
   "name": "Nexus AI Bot Master",
-  "description": "Uma plataforma de controle e aprendizado para treinar IAs de jogos de luta usando Python e Visão Computacional.",
+  "description": "Dashboard de controle para Nexus Agent (Python), com Visão Computacional em tempo real, treinamento de NexusNet e monitoramento de performance para Super Smash Flash 2.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
