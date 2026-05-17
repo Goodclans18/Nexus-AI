@@ -99,15 +99,6 @@ app.post("/api/predict", (req, res) => {
   });
 });
 
-app.get("/api/agent/sync", (req, res) => {
-  res.json({
-    version: "2.1.0",
-    lastUpdated: new Date().toISOString(),
-    scripts: PYTHON_SCRIPTS,
-    dependencies: ["torch", "mss", "pydirectinput", "opencv-python", "keyboard", "requests"]
-  });
-});
-
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -123,7 +114,16 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  app.get("/api/agent/sync", (req, res) => {
+  res.json({
+    version: "2.1.0",
+    lastUpdated: new Date().toISOString(),
+    scripts: PYTHON_SCRIPTS,
+    dependencies: ["torch", "mss", "pydirectinput", "opencv-python", "keyboard", "requests"]
+  });
+});
+
+app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }

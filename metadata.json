@@ -1,7 +1,9 @@
 {
   "name": "Nexus AI Bot Master",
   "description": "Dashboard de controle para Nexus Agent (Python), com Visão Computacional em tempo real, treinamento de NexusNet e monitoramento de performance para Super Smash Flash 2.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": [
+    "camera"
+  ],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
+  Search,
+  X,
   Zap, 
   Activity, 
   Cpu, 
@@ -23,10 +25,7 @@ import {
   Square,
   ShieldCheck,
   Lock,
-  Eye,
-  Search,
-  X,
-  Monitor
+  Eye
 } from 'lucide-react';
 import { StepStatus, ProjectStep, KeyStatus, ApiKey, GameState } from './types';
 import { PYTHON_SCRIPTS } from './constants';
@@ -38,8 +37,8 @@ const INITIAL_STEPS: ProjectStep[] = [
     description: 'Instalação das ferramentas essenciais: Python, OpenCV e PyTorch.',
     status: StepStatus.COMPLETED,
     details: 'Ambiente configurado. Dependências prontas para ponte local.',
-    progress: 100,
-    codeSnippet: PYTHON_SCRIPTS.PREP
+    codeSnippet: PYTHON_SCRIPTS.PREP,
+    icon: 'Zap'
   },
   {
     id: '2',
@@ -47,8 +46,8 @@ const INITIAL_STEPS: ProjectStep[] = [
     description: 'Capturando frames do jogo e seus inputs simultaneamente.',
     status: StepStatus.ACTIVE,
     details: 'Gravando 60 FPS. Armazenando em datasets/SSF2_v1.',
-    progress: 45,
-    codeSnippet: PYTHON_SCRIPTS.COLLECT
+    codeSnippet: PYTHON_SCRIPTS.COLLECT,
+    icon: 'Activity'
   },
   {
     id: '3',
@@ -56,8 +55,8 @@ const INITIAL_STEPS: ProjectStep[] = [
     description: 'Construindo a Rede Neural Convolucional para visão computacional.',
     status: StepStatus.IDLE,
     details: 'NexusNet v1: Arquitetura otimizada para mínima latência.',
-    progress: 0,
-    codeSnippet: PYTHON_SCRIPTS.BRAIN
+    codeSnippet: PYTHON_SCRIPTS.BRAIN,
+    icon: 'Cpu'
   },
   {
     id: '4',
@@ -65,8 +64,8 @@ const INITIAL_STEPS: ProjectStep[] = [
     description: 'A fase onde a IA aprende seu estilo de jogo através do erro.',
     status: StepStatus.IDLE,
     details: 'Necessário 50k frames. Progresso atual: 12k.',
-    progress: 0,
-    codeSnippet: PYTHON_SCRIPTS.TRAIN
+    codeSnippet: PYTHON_SCRIPTS.TRAIN,
+    icon: 'Play'
   },
   {
     id: '5',
@@ -74,8 +73,8 @@ const INITIAL_STEPS: ProjectStep[] = [
     description: 'Bot jogando em tempo real no SSF2.',
     status: StepStatus.IDLE,
     details: 'Pronto para inferência local.',
-    progress: 0,
-    codeSnippet: PYTHON_SCRIPTS.EXEC
+    codeSnippet: PYTHON_SCRIPTS.EXEC,
+    icon: 'CheckCircle2'
   }
 ];
 
@@ -103,17 +102,6 @@ const CHAR_DATABASE: Record<string, any> = {
   "Desconhecido": { startup: 0, active: 0, recovery: 0, shield: 0, tier: '?' }
 };
 
-const getIcon = (id: string) => {
-  switch (id) {
-    case '1': return <Cpu className="w-3 h-3" />;
-    case '2': return <Activity className="w-3 h-3" />;
-    case '3': return <Zap className="w-3 h-3" />;
-    case '4': return <Code2 className="w-3 h-3" />;
-    case '5': return <Play className="w-3 h-3" />;
-    default: return <Circle className="w-3 h-3" />;
-  }
-};
-
 export default function App() {
   const [steps, setSteps] = useState(INITIAL_STEPS);
   const [activeStepId, setActiveStepId] = useState('2');
@@ -130,36 +118,6 @@ export default function App() {
   const [visionStatus, setVisionStatus] = useState<'IDLE' | 'TRACKING' | 'ANALYZING'>('IDLE');
   const [matchState, setMatchState] = useState<'SEARCHING' | 'MATCH_START' | 'IN_GAME' | 'RESULTS'>('SEARCHING');
   const [isScanning, setIsScanning] = useState(false);
-  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const logContainerRef = useRef<HTMLDivElement>(null);
-
-  const startScreenCapture = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { cursor: "always" } as any,
-        audio: false
-      });
-      setScreenStream(stream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-      addLog("[VISION] Captura de tela iniciada. NexusNet vinculada.");
-      setVisionStatus('TRACKING');
-    } catch (err) {
-      console.error(err);
-      addLog("[ERRO] Falha ao iniciar captura de tela.");
-    }
-  };
-
-  const stopScreenCapture = () => {
-    if (screenStream) {
-      screenStream.getTracks().forEach(track => track.stop());
-      setScreenStream(null);
-      setVisionStatus('IDLE');
-      addLog("[VISION] Captura de tela encerrada.");
-    }
-  };
 
   // Simulação de Auto-Detecção e Ciclo de Vida do Jogo
   useEffect(() => {
@@ -393,7 +351,7 @@ export default function App() {
   };
 
   const downloadAgent = () => {
-    const blob = new Blob([PYTHON_SCRIPTS.FULL_AGENT], { type: 'text/plain' });
+    const blob = new Blob([PYTHON_SCRIPTS.EXEC], { type: 'text/plain' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -402,23 +360,32 @@ export default function App() {
     addLog("Agente baixado para uso offline.");
   };
 
-  const handleScan = () => {
+  const handleScan = async () => {
     setIsScanning(true);
-    addLog("Escaneando arquivos de SSF2...");
-    setTimeout(() => {
-      setIsScanning(false);
+    addLog("Sincronizando assets com o diretório local...");
+    try {
+      await fetch('/api/scan', { method: 'POST' });
       addLog("Assets sincronizados com sucesso.");
-    }, 2000);
+    } catch (e) {
+      addLog("Erro na sincronização de assets.");
+    } finally {
+      setTimeout(() => setIsScanning(false), 1000);
+    }
   };
 
   const handleStart = () => {
-    if (!connected) {
-      addLog("[ERRO] Agente Python offline. Inicie o servidor local primeiro.");
-      return;
+    if (!running) toggleEngine();
+  };
+
+  const getIcon = (name?: string) => {
+    switch (name) {
+      case 'Zap': return <Zap className="w-3 h-3" />;
+      case 'Activity': return <Activity className="w-3 h-3" />;
+      case 'Cpu': return <Cpu className="w-3 h-3" />;
+      case 'Play': return <Play className="w-3 h-3" />;
+      case 'CheckCircle2': return <CheckCircle2 className="w-3 h-3" />;
+      default: return <Code2 className="w-3 h-3" />;
     }
-    setRunning(true);
-    addLog("Nexus Core Iniciado.");
-    simulatePrediction();
   };
 
   return (
@@ -529,55 +496,18 @@ export default function App() {
           {/* AI VISION FEED */}
           <div className="h-[280px] hardware-card bg-black/60 relative overflow-hidden group border-blue-500/20">
             <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
-               <div className={`w-2 h-2 ${screenStream ? 'bg-red-500 animate-pulse' : 'bg-zinc-700'} rounded-full`}></div>
-               <span className="text-[10px] font-black text-white uppercase tracking-tighter">Nexus Vision / {screenStream ? 'LIVE SCREEN' : 'FEED IDLE'}</span>
+               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+               <span className="text-[10px] font-black text-white uppercase tracking-tighter">Nexus Vision / LIVE FEED</span>
             </div>
-
-            {/* Stream Viewport */}
-            <div className="absolute inset-0 bg-black">
-              {screenStream ? (
-                <video 
-                  ref={videoRef} 
-                  autoPlay 
-                  playsInline 
-                  className="w-full h-full object-cover grayscale brightness-75 contrast-125"
-                />
-              ) : (
-                <div className="absolute inset-0 opacity-20 pointer-events-none">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_black_90%)] z-10"></div>
-                  <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center grayscale contrast-150"></div>
-                </div>
-              )}
-            </div>
-
-            {/* Action Button for Capture */}
-            {!screenStream && !isShuttingDown && (
-              <div className="absolute inset-0 flex items-center justify-center z-30 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button 
-                  onClick={startScreenCapture}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-black uppercase tracking-[0.2em] rounded shadow-2xl flex items-center gap-3 border border-blue-400/50"
-                >
-                  <Monitor className="w-4 h-4" />
-                  Capturar Tela do Jogo
-                </button>
-              </div>
-            )}
-
-            {screenStream && (
-              <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button 
-                  onClick={stopScreenCapture}
-                  className="px-2 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-500 rounded border border-red-500/30 text-[9px] font-bold uppercase flex items-center gap-1"
-                >
-                  <X className="w-3 h-3" />
-                  Encerrar
-                </button>
-              </div>
-            )}
             
-            {/* HUD Overlays */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none">
+               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_black_90%)] z-10"></div>
+               <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center grayscale contrast-150"></div>
+            </div>
+
+            {/* Simulated Bounding Boxes */}
             <AnimatePresence mode="wait">
-               {screenStream && visionStatus === 'TRACKING' ? (
+               {visionStatus === 'TRACKING' ? (
                  <>
                    <motion.div 
                      initial={{ opacity: 0, scale: 0.8 }}
@@ -644,7 +574,7 @@ export default function App() {
                 >
                   <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-2">
-                      <div className={`p-1 rounded bg-black text-zinc-500`}>{getIcon(step.id)}</div>
+                      <div className={`p-1 rounded bg-black text-zinc-500`}>{getIcon(step.icon)}</div>
                       <span className="text-[10px] font-bold uppercase text-white">{step.title}</span>
                     </div>
                     <span className={`text-[8px] uppercase tracking-widest ${step.status === 'COMPLETED' ? 'text-emerald-500' : 'text-zinc-500'}`}>{step.status}</span>
@@ -861,7 +791,7 @@ export default function App() {
                    <span className="text-[7px] text-blue-500 uppercase font-bold">Streaming</span>
                 </div>
              </div>
-             <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar scroll-smooth">
+             <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar scroll-smooth" ref={scrollRef}>
                 {logs.map((log, i) => (
                   <div key={i} className="text-[10px] font-mono leading-relaxed border-l-2 border-white/5 pl-3 py-1">
                     <span className="text-zinc-600 mr-2">[{new Date().toLocaleTimeString()}]</span>
@@ -870,7 +800,6 @@ export default function App() {
                     </span>
                   </div>
                 ))}
-                <div ref={logContainerRef} />
               </div>
             </div>
           </div>
